@@ -1,0 +1,102 @@
+Terminals in all uppercase, productions in lowercase (with the exception of the "Program" nonterminal)
+
+---------------
+
+// NEED PROGRAM GRAMMAR
+
+--------------
+
+---------------
+
+// NEED FUNCTION GRAMMAR
+
+--------------
+
+// DECLARATION
+
+Declaration : IdentifierList ':' INTEGER
+  | IdentifierList ':' ARRAY '[' number ']' OF INTEGER
+  ;
+IdentifierList : identifier
+  | IdentifierList ',' identifier
+  ;
+
+
+// STATEMENT
+
+statement -> EXIT
+statement -> CONTINUE
+statement -> BREAK
+statement -> READ variable
+statement -> WRITE variable
+statement -> DO BEGINLOOP statement ENDLOOP WHILE bool_exp
+statement -> WHILE bool_exp BEGINLOOP statement ENDLOOP
+statement -> var ASSIGN exp
+statement -> var ASSIGN bool_exp QUESTION exp COLON exp
+statement -> IF bool_exp THEN statement ENDIF
+statement -> IF bool_exp THEN statement ELSE statement ENDIF
+statement -> IF bool_exp THEN statement elif_list ENDIF
+statement -> IF bool_exp THEN statement elif_list ELSE statement ENDIF
+
+
+// BOOLEAN EXPRESSION
+
+bool_exp -> relation_and_exp
+bool_exp -> bool_exp OR relation_and_exp
+
+// RELATION AND EXPRESSION
+
+relation_and_exp -> rel_exp
+relation_and_exp -> relation_and_exp AND rel_exp
+
+// RELATION EXPRESSION
+
+rel_exp -> comp_exp
+rel_exp -> TRUE
+rel_exp -> FALSE
+rel_exp -> left_paren bool_exp right_paren
+rel_exp -> NOT rel_exp
+
+
+// COMP EXPRESSION
+
+comp_exp -> exp EQ exp
+comp_exp -> exp NEQ exp
+comp_exp -> exp LTE exp
+comp_exp -> exp GTE exp
+comp_exp -> exp LT exp
+comp_exp -> exp GT exp
+
+// EXPRESSIONS
+
+exp -> multiplicative_exp
+exp -> exp ADD multiplicative_exp
+exp -> exp SUB multiplicative_exp
+
+// MULTIPLICATION EXPRESSION
+
+multiplicative_exp -> term
+multiplicative_exp -> multiplicative_exp MULT term
+multiplicative_exp -> multiplicative_exp DIV term
+multiplicative_exp -> multiplicative_exp MOD term
+
+// TERMS
+
+term -> NUMBER
+term -> var
+term -> left_paren exp right_paren
+term -> SUB term
+
+// VARIABLES
+
+var -> IDENT
+var -> IDENT left_brack exp right_brack
+
+yyLval.str_val = strdup(yytext); return IDENT;
+
+
+
+
+## IDENTIFIER $$ NOTES
+- only use $$ =  $1.val + ... when we want to gather the value of the identifier in Phase2, will be
+  used more in Phase3
