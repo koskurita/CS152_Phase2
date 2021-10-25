@@ -1,23 +1,26 @@
 %{
   #include "mini_l.tab.h"
+  #include "heading.h"
   #include <string>
   using namespace std;
-  extern int yyerror(char *s);
-  int currLine, currPos = 1;
+  extern int yyerror(string s);
+  int currPos = 1;
+  extern int yylineno;
 %}
+
 
 DIGIT [0-9]
 LETTER [a-zA-Z]
 
 %%
 "function" {currPos += yyleng; return FUNCTION;}
-"beginparams" {currPos += yyleng; return BEGIN_PARAMS;}
-"endparams" {currPos += yyleng; return END_PARAMS;}
-"beginlocals" {currPos += yyleng; return BEGIN_LOCALS;}
-"endlocals" {currPos += yyleng; return END_LOCALS;}
-"beginbody" {currPos += yyleng; return BEGIN_BODY;}
-"endbody" {currPos += yyleng; return END_BODY;}
-"integer" {currPos += yyleng; return INTEGER;}
+"beginparams" {currPos += yyleng; return BEGINPARAMS;}
+"endparams" {currPos += yyleng; return ENDPARAMS;}
+"beginlocals" {currPos += yyleng; return BEGINLOCALS;}
+"endlocals" {currPos += yyleng; return ENDLOCALS;}
+"beginbody" {currPos += yyleng; return BEGINBODY;}
+"endbody" {currPos += yyleng; return ENDBODY;}
+"integer" {currPos += yyleng; return INT;}
 "array" {currPos += yyleng; return ARRAY;}
 "of" {currPos += yyleng; return OF;}
 "if" {currPos += yyleng; return IF;}
@@ -26,7 +29,6 @@ LETTER [a-zA-Z]
 "else" {currPos += yyleng; return ELSE;}
 "while" {currPos += yyleng; return WHILE;}
 "do" {currPos += yyleng; return DO;}
-"for" {currPos += yyleng; return FOR;}
 "beginloop" {currPos += yyleng; return BEGINLOOP;}
 "endloop" {currPos += yyleng; return ENDLOOP;}
 "continue" {currPos += yyleng; return CONTINUE;}
@@ -39,55 +41,52 @@ LETTER [a-zA-Z]
 "false" {currPos += yyleng; return FALSE;}
 "return" {currPos += yyleng; return RETURN;}
 
-"-" {currPos += yyleng; return SUB;}
-"+" {currPos += yyleng; return ADD;}
+"-" {currPos += yyleng; return MINUS;}
+"+" {currPos += yyleng; return PLUS;}
 "*" {currPos += yyleng; return MULT;}
 "/" {currPos += yyleng; return DIV;}
 "%" {currPos += yyleng; return MOD;}
 
-"==" {currPos += yyleng; return EQ;}
-"<>" {currPos += yyleng; return NEQ;}
-"<" {currPos += yyleng; return LT;}
-">" {currPos += yyleng; return GT;}
-"<=" {currPos += yyleng; return LTE;}
-">=" {currPos += yyleng; return GTE;}
+"==" {currPos += yyleng; return EQUALTO;}
+"<=" {currPos += yyleng; return LESSTHANEQ;}
+">=" {currPos += yyleng; return GREATERTHANEQ;}
+"<" {currPos += yyleng; return LESSTHAN;}
+">" {currPos += yyleng; return GREATERTHAN;}
+"<>" {currPos += yyleng; return NOTEQUAL;}
 
-";" {currPos += yyleng; return SEMICOLON;}
+
+";" {currPos += yyleng; return SEMI;}
 ":" {currPos += yyleng; return COLON;}
 "," {currPos += yyleng; return COMMA;}
-"(" {currPos += yyleng; return L_PAREN;}
-")" {currPos += yyleng; return R_PAREN;}
-"[" {currPos += yyleng; return L_SQUARE_BRACKET;}
-"]" {currPos += yyleng; return R_SQUARE_BRACKET;}
+"(" {currPos += yyleng; return LPAREN;}
+")" {currPos += yyleng; return RPAREN;}
+"[" {currPos += yyleng; return LBRACKET;}
+"]" {currPos += yyleng; return RBRACKET;}
 ":=" {currPos += yyleng; return ASSIGN;}
 
 {DIGIT}+ {yylval.str_val = strdup(yytext); currPos += yyleng; return NUMBER;}
 
-("_"[a-zA-Z0-9_]*)|({DIGIT}[a-zA-Z0-9_]*) {printf("Error at line %d, column %d: identifier \"%s\" must begin with a letter\n", currLine, currPos, yytext); exit(1);}
+("_"[a-zA-Z0-9_]*)|({DIGIT}[a-zA-Z0-9_]*) {yyerror("Identifier must begin with a letter "); exit(1);}
 
-([a-zA-Z0-9_]*"_") {printf("Error at line %d, column %d: identifier \"%s\" cannot end with an underscore\n", currLine, currPos, yytext); exit(1);}
+([a-zA-Z0-9_]*"_") {yyerror("Identifier cannot end with an underscore"); exit(1);}
 
 ({LETTER}+[a-zA-Z0-9_]*) {yylval.str_val = strdup(yytext); currPos += yyleng; return IDENT;}
 
 [ \t]+ {/*ignore : whitespace */ currPos += yyleng;}
 
-"##".* {/*ignore : comments */ currLine++;currPos += yyleng;}
+"##".* {/*ignore : comments */ yylineno++; currPos += yyleng;}
 
-"\n" {currLine++; currPos = 1;}
+"\n" {yylineno++; currPos = 1;}
 
-. { printf("Error in parser"); exit(0);}
+. { yyerror("Error in parser"); exit(0);}
 
 %%
 
+int yyparse();
+
 int main(int argc, char **argv) {
-  if (argc > 1) {
-    yyin = fopen(argv[1], "r");
-    if (yyin == NULL) {
-      yyin = stdin;
-    }
-  }
-  else {
-    yyin = stdin;
+  if ((argc > 1) && (freopen(argv[1], "r", stdin) == NULL)) {
+	std::cerr << argv[0] << ": File " << argv[1] << " cannot be opened.\n";
   }
   
   yyparse();
