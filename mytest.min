@@ -1,4 +1,3 @@
-
 function main;
 beginparams
 endparams
@@ -11,13 +10,13 @@ beginlocals
 
 endlocals
 
-beginbody    ## main program
+beginbody	## main program
 
   read i, j;
 
   k := 0;
   n := 20;
-
+  
   do 
     beginloop
        t[k] := k;
@@ -29,7 +28,7 @@ beginbody    ## main program
     endloop
   while k < n;
 
-  if i < j and j < n and i >= 0 then
+  if i<j and j < n and i>=0 then
      t[i] := i * 2;
      t[j] := j * 2;
      k := t[i];
@@ -44,7 +43,7 @@ beginbody    ## main program
              continue;
         endif;
         write k;
-       endloop;
+     endloop;
   endif;
 
   write i, j, k;
@@ -58,3 +57,4 @@ beginbody    ## main program
   endif;
 
 endbody
+
